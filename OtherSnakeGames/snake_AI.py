@@ -3,7 +3,7 @@ import pygame
 from random import randint
 
 
-class SnakeGame:
+class SnakeGameAI:
     def __init__(self):
         # Initialises all PyGame modules
         pygame.init()
@@ -24,6 +24,8 @@ class SnakeGame:
         self.snake_list = []
         self.snake_list_length = 1
 
+        self.number_of_steps = 0
+
         # Creates a surface from a given tuple
         self.DIS = pygame.display.set_mode((self.DIS_W, self.DIS_H))  # y, x
 
@@ -41,9 +43,39 @@ class SnakeGame:
         self.foodx = round(randint(0, self.DIS_W - self.SNAKE_SIZE) / 10) * 10
         self.foody = round(randint(0, self.DIS_H - self.SNAKE_SIZE) / 10) * 10
 
+    def reset(self):
+        # Iteration of resets of the game we are on?
+        self.number_of_steps = 0
+
+        self.game_over = False
+
+        self.x1 = self.DIS_W / 2
+        self.y1 = self.DIS_H / 2
+
+        self.x1_change = 0
+        self.y1_change = 0
+
+        self.snake_list = []
+        self.snake_list_length = 1
+
+        self.clock = pygame.time.Clock()
+
+        self.foodx = round(randint(0, self.DIS_W - self.SNAKE_SIZE) / 10) * 10
+        self.foody = round(randint(0, self.DIS_H - self.SNAKE_SIZE) / 10) * 10
+
+        self.game_main_loop()
+
+    def taking_to_long_check(self):
+        if self.number_of_steps > 100 * self.snake_list_length:
+            self.game_over = True
+            self.reward = -10
+        else:
+            pass
+
     def boundary_check(self):
         if self.x1 >= self.DIS_W or self.x1 < 0 or self.y1 >= self.DIS_H or self.y1 < 0:
             self.game_over = True
+            self.reward = -10
         else:
             pass
 
@@ -76,9 +108,28 @@ class SnakeGame:
                 self.DIS, self.BLUE, [x[0], x[1], self.SNAKE_SIZE, self.SNAKE_SIZE]
             )
 
-        # pygame.display.update()
+    def move(self, action):
+        for event in pygame.event.get():
+            # Key stroke event management
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_a:
+                    self.x1_change = -self.SNAKE_SIZE
+                    self.y1_change = 0
+                elif event.key == pygame.K_d:
+                    self.x1_change = self.SNAKE_SIZE
+                    self.y1_change = 0
+                elif event.key == pygame.K_w:
+                    self.y1_change = -self.SNAKE_SIZE
+                    self.x1_change = 0
+                elif event.key == pygame.K_s:
+                    self.y1_change = self.SNAKE_SIZE
+                    self.x1_change = 0
+                elif event.type == pygame.QUIT:
+                    self.game_over = True
 
-    def game_main_loop(self):
+    def game_main_loop(self, action):
+        self.reward = 0
+
         while not self.game_over:
 
             for event in pygame.event.get():
@@ -87,25 +138,12 @@ class SnakeGame:
                 if event.type == pygame.QUIT:
                     self.game_over = True
 
-                # Key stroke event management
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_a:
-                        self.x1_change = -self.SNAKE_SIZE
-                        self.y1_change = 0
-                    elif event.key == pygame.K_d:
-                        self.x1_change = self.SNAKE_SIZE
-                        self.y1_change = 0
-                    elif event.key == pygame.K_w:
-                        self.y1_change = -self.SNAKE_SIZE
-                        self.x1_change = 0
-                    elif event.key == pygame.K_s:
-                        self.y1_change = self.SNAKE_SIZE
-                        self.x1_change = 0
-                    elif event.type == pygame.QUIT:
-                        self.game_over = True
+            # Move
+            self.move()
 
             # Boundary condition checking
             self.boundary_check()
+            self.taking_to_long_check()
 
             # Ammending Coords of Snake
             self.x1 += self.x1_change
@@ -125,6 +163,7 @@ class SnakeGame:
                 self.foodx = round(randint(0, self.DIS_W - self.SNAKE_SIZE) / 10) * 10
                 self.foody = round(randint(0, self.DIS_H - self.SNAKE_SIZE) / 10) * 10
                 self.snake_list_length = self.snake_list_length + 1
+                self.reward = 10
 
             pygame.display.update()
 
@@ -138,5 +177,6 @@ class SnakeGame:
 
 
 if __name__ == "__main__":
-    snake_run = SnakeGame()
+    snake_run = SnakeGameAI()
     snake_run.game_main_loop()
+    snake_run.reset()
