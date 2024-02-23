@@ -24,8 +24,10 @@ BLUE2 = (0, 100, 255)
 BLACK = (0, 0, 0)
 
 BLOCK_SIZE = 20
-SPEED = 40
+SPEED = 1000
 
+pygame.init() # now use display and fonts
+font_style = pygame.font.SysFont("comicsansms", 35)
 
 class SnakeGame:
     def __init__(self, w=500, h=500):
@@ -54,8 +56,9 @@ class SnakeGame:
         self.frame_iteration = 0
 
     def _place_food(self):
-        x = random.randint(0, (self.w - BLOCK_SIZE) // BLOCK_SIZE) * BLOCK_SIZE
-        y = random.randint(0, (self.h - BLOCK_SIZE) // BLOCK_SIZE) * BLOCK_SIZE
+        
+        x = random.randint(0, (self.w - BLOCK_SIZE) / BLOCK_SIZE) * BLOCK_SIZE
+        y = random.randint(0, (self.h - BLOCK_SIZE) / BLOCK_SIZE) * BLOCK_SIZE
         self.food = Point(x, y)
         if self.food in self.snake:
             self._place_food()
@@ -81,7 +84,7 @@ class SnakeGame:
             return reward, game_over, self.score
 
         # 4. Place new food or just move
-        if self.head == self.food:
+        if self.head.x == self.food.x and self.head.y == self.food.y:
             self.score += 1
             reward = 10
             self._place_food()
@@ -131,7 +134,7 @@ class SnakeGame:
             pygame.Rect(self.food.x, self.food.y, BLOCK_SIZE, BLOCK_SIZE),
         )
 
-        text = font.render("Score: " + str(self.score), True, WHITE)
+        text = font_style.render("Score: " + str(self.score), True, WHITE)
         self.display.blit(text, [0, 0])
         pygame.display.flip()
 

@@ -3,6 +3,8 @@ import random
 import numpy as np
 from collections import deque
 from game import SnakeGame, Direction, Point, BLOCK_SIZE
+from model import LinearQNet, QTrainer
+from utils import plot
 
 # These constants should be tested with for fine tuning
 MAX_MEMORY = 100_000
@@ -13,12 +15,20 @@ class Agent:
     def __init__(self):
         self.n_games = 0 
         self.epsilon = 0 # Control of Randomness
-        self.gamme = 0 # Discount Rate
+        self.gamma = 0 # Discount Rate
         self.memory = deque(maxlen=MAX_MEMORY)
         
         # TODO: Model, Trainer
-        self.model = None
-        self.trainer = None
+        self.model = LinearQNet(
+            input_size=11, # const.
+            hidden_size=256,
+            output_size=3, # const.
+        )
+        self.trainer = QTrainer(
+            model=self.model,
+            lr=LR,
+            gamma=self.gamma,
+        )
 
     def get_state(self, game):
         head = game.snake[0]
@@ -163,6 +173,12 @@ def train():
             )
 
             # Plotting Stuff...
+            plot_scores.append(score)
+            total_score += score
+            mean_score = total_score / agent.n_games
+            plot_mean_scores.append(mean_score)
+            plot(plot_scores, plot_mean_scores)
+
 
 
 if __name__ == '__main__':
